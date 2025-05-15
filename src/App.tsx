@@ -1,14 +1,10 @@
 import { useEffect, useState } from "react";
 import image from "./assets/0-floor.png";
 import svgOverlay from "./assets/0-floor.svg";
-import PolygonFilter from "./components/polygonFilter/PolygonFilter";
+import PolygonFilter from "./components/PolygonFilter";
 import polygonData from "./assets/data.json";
+import { Polygon } from "./types/type";
 
-export type Polygon = {
-  code: number;
-  status: string;
-  price: number;
-};
 function App() {
   const [filteredData, setFilteredData] = useState<Polygon[]>(polygonData);
   const [svgDataUrl, setSvgDataUrl] = useState<string>("");
@@ -43,15 +39,15 @@ function App() {
         console.error("Error loading SVG:", error);
       });
   }, [filteredData]);
+
   return (
     <>
-      <PolygonFilter onFilterChange={setFilteredData} />
       <img
         style={{
           position: "fixed",
-          top: "50",
+          top: "0",
           left: "0",
-          width: "100",
+          width: "100%",
           height: "100%",
           backgroundColor: "#272727",
           objectFit: "cover",
@@ -61,31 +57,16 @@ function App() {
       <img
         style={{
           position: "fixed",
-          top: "50",
+          top: "0",
           left: "0",
-          width: "100",
+          width: "100%",
           height: "100%",
           objectFit: "cover",
-          zIndex: 1,
         }}
         src={svgDataUrl}
         alt="SVG Overlay"
       />
-      {/* <div
-        id="svg-container"
-        dangerouslySetInnerHTML={{ __html: svgContainer }}
-      /> */}
-      {/* <img
-        style={{
-          position: "fixed",
-          top: "50",
-          left: "0",
-          width: "100",
-          height: "100%",
-          objectFit: "cover",
-        }}
-        src={svgOverlay}
-      /> */}
+      <PolygonFilter onFilterChange={setFilteredData} />
     </>
   );
 }
