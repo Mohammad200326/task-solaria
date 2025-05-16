@@ -35,7 +35,7 @@ const PolygonFilter = (props: IProps) => {
   }, [status, priceValues, type, areaValues]);
 
   return (
-    <div className="w-xs rounded-lg bg-[rgba(0,0,0,0.3)] py-4 px-5 text-white shadow-lg fixed top-0 left-0">
+    <div className="w-xs rounded-lg bg-[rgba(0,0,0,0.7)] py-4 px-5 text-white shadow-lg fixed top-0 left-0">
       <div className="mb-4 flex  justify-around space-x-4 border-b border-gray-600 pb-2">
         {["type", "availability"].map((tab) => (
           <button

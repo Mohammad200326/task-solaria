@@ -1,72 +1,125 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import image from "./assets/0-floor.png";
 import svgOverlay from "./assets/0-floor.svg";
 import PolygonFilter from "./components/PolygonFilter";
 import polygonData from "./assets/data.json";
 import { Polygon } from "./types/type";
+import { ReactSVG } from "react-svg";
 
 function App() {
   const [filteredData, setFilteredData] = useState<Polygon[]>(polygonData);
-  const [svgDataUrl, setSvgDataUrl] = useState<string>("");
+  const [hoveredPolygon, setHoveredPolygon] = useState<Polygon | null>(null);
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 
-  useEffect(() => {
-    fetch(svgOverlay)
-      .then((response) => response.text())
-      .then((svgText) => {
-        const parser = new DOMParser();
-        const svgDoc = parser.parseFromString(svgText, "image/svg+xml");
-
-        const polygons = svgDoc.querySelectorAll("polygon");
-
-        const ids = filteredData.map((item) => item.code);
-
-        polygons.forEach((polygon) => {
-          const polygonCode = polygon.getAttribute("data-code");
-
-          if (!ids.includes(Number(polygonCode))) {
-            polygon.style.display = "none";
-          } else {
-            polygon.style.display = "block";
-          }
-        });
-
-        const svgString = svgDoc.documentElement.outerHTML;
-        const encodedSvg = encodeURIComponent(svgString);
-        const dataUrl = `data:image/svg+xml;charset=utf-8,${encodedSvg}`;
-        setSvgDataUrl(dataUrl);
-      })
-      .catch((error) => {
-        console.error("Error loading SVG:", error);
-      });
-  }, [filteredData]);
+  const ids = filteredData.map((item) => item.code);
 
   return (
     <>
       <img
-        style={{
-          position: "fixed",
-          top: "0",
-          left: "0",
-          width: "100%",
-          height: "100%",
-          backgroundColor: "#272727",
-          objectFit: "cover",
-        }}
         src={image}
-      />
-      <img
+        alt="Background"
         style={{
           position: "fixed",
-          top: "0",
-          left: "0",
-          width: "100%",
-          height: "100%",
+          top: 0,
           objectFit: "cover",
+          zIndex: 0,
+          left: "25%",
+          width: "50%",
+          height: "100%",
         }}
-        src={svgDataUrl}
-        alt="SVG Overlay"
       />
+
+      <ReactSVG
+        src={svgOverlay}
+        beforeInjection={(svg) => {
+          svg.setAttribute("width", "100%");
+          svg.setAttribute("height", "100%");
+          svg.setAttribute("preserveAspectRatio", "xMidYMid slice");
+
+          svg.style.position = "fixed";
+          svg.style.top = "0";
+          svg.style.left = "25%";
+          svg.style.width = "50%";
+          svg.style.height = "100%";
+          svg.style.zIndex = "1";
+          svg.style.cursor = "pointer";
+
+          const polygons = svg.querySelectorAll("polygon");
+
+          polygons.forEach((polygon) => {
+            const polygonCode = polygon.getAttribute("data-code");
+            const code = Number(polygonCode);
+
+            if (!ids.includes(code)) {
+              polygon.style.display = "none";
+            } else {
+              polygon.style.display = "block";
+
+              polygon.addEventListener("mouseover", () => {
+                const data = filteredData.find((item) => item.code === code);
+                if (data) setHoveredPolygon(data);
+              });
+
+              polygon.addEventListener("mouseleave", () => {
+                setHoveredPolygon(null);
+              });
+
+              polygon.addEventListener("mousemove", (e: MouseEvent) => {
+                setMousePos({ x: e.clientX, y: e.clientY });
+              });
+            }
+          });
+        }}
+        wrapper="div"
+        style={{
+          position: "fixed",
+          top: 0,
+          left: "25%",
+          width: "50%",
+          height: "100%",
+          zIndex: 1,
+        }}
+      />
+
       <PolygonFilter onFilterChange={setFilteredData} />
+      {hoveredPolygon && (
+        <div
+          className="fixed bg-[rgba(0,0,0,0.7)] p-2 rounded-lg shadow-md text-[18px] pointer-events-none z-[9999] text-white w-[250px] flex justify-between items-center"
+          style={{
+            top: mousePos.y + 10,
+            left: mousePos.x + 10,
+          }}
+        >
+          <div>
+            <p>
+              Unit {hoveredPolygon.code <= 9 ? 10 : 1}
+              {hoveredPolygon.code}
+            </p>
+            <p>Unit Type</p>
+            <p>Total Area</p>
+            <p>Price</p>
+          </div>
+          <div className="text-right">
+            <p
+              className={`text-white text-center p-1 rounded
+                ${
+                  hoveredPolygon.status === "available"
+                    ? "bg-emerald-500"
+                    : hoveredPolygon.status === "sold"
+                    ? "bg-blue-500"
+                    : "bg-amber-500"
+                }`}
+            >
+              {hoveredPolygon.status}
+            </p>
+            <p>{hoveredPolygon.type}</p>
+            <p>
+              {hoveredPolygon.area} M<sup>2</sup>
+            </p>
+            <p>{hoveredPolygon.price} EGP</p>
+          </div>
+        </div>
+      )}
     </>
   );
 }
