@@ -18,15 +18,7 @@ function App() {
       <img
         src={image}
         alt="Background"
-        style={{
-          position: "fixed",
-          top: 0,
-          objectFit: "cover",
-          zIndex: 0,
-          left: "25%",
-          width: "50%",
-          height: "100%",
-        }}
+        className="fixed top-0 object-cover z-0 left-1/4 w-1/2 h-full"
       />
 
       <ReactSVG
@@ -71,14 +63,7 @@ function App() {
           });
         }}
         wrapper="div"
-        style={{
-          position: "fixed",
-          top: 0,
-          left: "25%",
-          width: "50%",
-          height: "100%",
-          zIndex: 1,
-        }}
+        className="fixed top-0 left-1/4 w-1/2 h-full z-[1]"
       />
 
       <PolygonFilter onFilterChange={setFilteredData} />
